@@ -5,7 +5,12 @@
     "description": "Intercepts downloads and sends them directly to Axel GUI",
     "browser_specific_settings": {
         "gecko": {
-            "id": "axel-gui-downloader@sourav.dev"
+            "id": "axel-gui-downloader@sourav.dev",
+            "data_collection_permissions": {
+                "required": [
+                    "none"
+                ]
+            }
         }
     },
     "permissions": [

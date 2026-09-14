@@ -1,7 +1,7 @@
-# Maintainer: Sourav Gope <your-email@example.com>
+# Maintainer: TheSerphh <souravgope765@gmail.com>
 pkgname=axel-gui-git
 _pkgname=axel-gui
-pkgver=r8.f7e27db
+pkgver=r9.f03045c
 pkgrel=1
 pkgdesc="Modern Qt6 GUI wrapper for the Axel download accelerator with Firefox integration"
 arch=('x86_64')
