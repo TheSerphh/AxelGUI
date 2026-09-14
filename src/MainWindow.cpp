@@ -21,44 +21,53 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::setupUi()
 {
     setWindowTitle("Axel Download Manager");
-    resize(760, 560);
+    resize(780, 580);
 
     QWidget *central = new QWidget(this);
     setCentralWidget(central);
     QVBoxLayout *mainLayout = new QVBoxLayout(central);
+    mainLayout->setContentsMargins(16, 16, 16, 16);
+    mainLayout->setSpacing(12);
 
     // --- Header / Theme Selector Bar ---
     QHBoxLayout *topBar = new QHBoxLayout();
-    QLabel *themeLabel = new QLabel("Color Scheme:", this);
+    QLabel *themeLabel = new QLabel("Theme:", this);
+    themeLabel->setStyleSheet("font-weight: bold;");
+
     m_themeCombo = new QComboBox(this);
+    m_themeCombo->setCursor(Qt::PointingHandCursor);
     m_themeCombo->addItems(ThemeManager::instance().availableThemes());
     m_themeCombo->setCurrentText(ThemeManager::instance().currentThemeName());
 
     QPushButton *importThemeBtn = new QPushButton("Import JSON...", this);
-    QPushButton *resetThemeBtn = new QPushButton("Reset to Default", this);
+    QPushButton *resetThemeBtn = new QPushButton("Reset Default", this);
+    importThemeBtn->setCursor(Qt::PointingHandCursor);
+    resetThemeBtn->setCursor(Qt::PointingHandCursor);
 
     topBar->addWidget(themeLabel);
-    topBar->addWidget(m_themeCombo);
+    topBar->addWidget(m_themeCombo, 1);
     topBar->addWidget(importThemeBtn);
     topBar->addWidget(resetThemeBtn);
-    topBar->addStretch();
+    topBar->addStretch(2);
     mainLayout->addLayout(topBar);
 
     connect(m_themeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onThemeSelected);
     connect(importThemeBtn, &QPushButton::clicked, this, &MainWindow::onImportTheme);
     connect(resetThemeBtn, &QPushButton::clicked, this, &MainWindow::onResetTheme);
 
-    // --- Configuration Group ---
+    // --- Configuration Card ---
     QGroupBox *configGroup = new QGroupBox("Download Details", this);
     QGridLayout *gridLayout = new QGridLayout(configGroup);
+    gridLayout->setVerticalSpacing(10);
+    gridLayout->setHorizontalSpacing(10);
 
     m_urlEdit = new QLineEdit(this);
-    m_urlEdit->setPlaceholderText("https://example.com/file.tar.gz");
+    m_urlEdit->setPlaceholderText("https://example.com/file.iso");
 
     m_destEdit = new QLineEdit(this);
-    QString defDownloadDir = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
-    m_destEdit->setText(defDownloadDir);
+    m_destEdit->setText(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation));
     QPushButton *browseBtn = new QPushButton("Browse", this);
+    browseBtn->setCursor(Qt::PointingHandCursor);
     connect(browseBtn, &QPushButton::clicked, this, &MainWindow::onBrowseFolder);
 
     m_fileEdit = new QLineEdit(this);
@@ -80,28 +89,35 @@ void MainWindow::setupUi()
 
     mainLayout->addWidget(configGroup);
 
-    // --- Action Controls ---
+    // --- Action Buttons ---
     QHBoxLayout *actionLayout = new QHBoxLayout();
     m_startBtn = new QPushButton("Start Accelerator", this);
+    m_startBtn->setObjectName("primaryBtn");
+    m_startBtn->setCursor(Qt::PointingHandCursor);
+
     m_cancelBtn = new QPushButton("Cancel", this);
+    m_cancelBtn->setObjectName("dangerBtn");
+    m_cancelBtn->setCursor(Qt::PointingHandCursor);
     m_cancelBtn->setEnabled(false);
 
     connect(m_startBtn, &QPushButton::clicked, this, &MainWindow::onStartDownload);
     connect(m_cancelBtn, &QPushButton::clicked, this, &MainWindow::onCancelDownload);
 
-    actionLayout->addWidget(m_startBtn);
-    actionLayout->addWidget(m_cancelBtn);
+    actionLayout->addWidget(m_startBtn, 2);
+    actionLayout->addWidget(m_cancelBtn, 1);
     mainLayout->addLayout(actionLayout);
 
-    // --- Progress Information ---
+    // --- Progress Area ---
     m_progressBar = new QProgressBar(this);
     m_progressBar->setValue(0);
     mainLayout->addWidget(m_progressBar);
 
     QHBoxLayout *statLayout = new QHBoxLayout();
     m_statusLabel = new QLabel("Ready", this);
+    m_statusLabel->setStyleSheet("font-weight: bold;");
     m_speedLabel = new QLabel("Speed: --", this);
     m_etaLabel = new QLabel("ETA: --", this);
+
     statLayout->addWidget(m_statusLabel, 2);
     statLayout->addWidget(m_speedLabel, 1);
     statLayout->addWidget(m_etaLabel, 1);
@@ -171,7 +187,7 @@ void MainWindow::onImportTheme()
     }
     else
     {
-        QMessageBox::critical(this, "Import Error", "Failed to parse the theme JSON file. Verify required color attributes.");
+        QMessageBox::critical(this, "Import Error", "Failed to parse the theme JSON file.");
     }
 }
 

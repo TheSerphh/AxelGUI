@@ -2,13 +2,16 @@
     "name": "Dracula",
     "background": "#282a36",
     "surface": "#343746",
+    "surfaceCard": "#2d303e",
+    "surfaceLight": "#44475a",
     "border": "#44475a",
     "textPrimary": "#f8f8f2",
-    "textSecondary": "#6272a4",
+    "textMuted": "#6272a4",
     "accent": "#bd93f9",
     "accentHover": "#ff79c6",
-    "accentPressed": "#ff5555",
-    "progressChunk": "#50fa7b",
-    "success": "#50fa7b",
-    "error": "#ff5555"
+    "accentPressed": "#bd93f9",
+    "accentText": "#282a36",
+    "danger": "#ff5555",
+    "dangerBg": "#3d2127",
+    "success": "#50fa7b"
 }

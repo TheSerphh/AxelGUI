@@ -4,210 +4,417 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSettings>
-#include <QDebug>
 
-ThemeManager& ThemeManager::instance() {
+ThemeManager &ThemeManager::instance()
+{
     static ThemeManager instance;
     return instance;
 }
 
-ThemeManager::ThemeManager() {
+ThemeManager::ThemeManager()
+{
     registerBuiltinThemes();
 }
 
-void ThemeManager::registerBuiltinThemes() {
+void ThemeManager::registerBuiltinThemes()
+{
     m_themes["Default"] = {
-        "Default", "#1e1e24", "#2b2b36", "#3e3e4f",
-        "#f0f0f5", "#a0a0b2", "#4f8ff7", "#6aa2fc",
-        "#3773db", "#4f8ff7", "#4ec9b0", "#f44747"
-    };
-
-    m_themes["Nord"] = {
-        "Nord", "#2e3440", "#3b4252", "#4c566a",
-        "#eceff4", "#d8dee9", "#88c0d0", "#8fbcbb",
-        "#81a1c1", "#a3be8c", "#a3be8c", "#bf616a"
-    };
+        "Default", "#18181b", "#27272a", "#202024", "#3f3f46",
+        "#3f3f46", "#f4f4f5", "#a1a1aa", "#3b82f6", "#60a5fa",
+        "#2563eb", "#ffffff", "#ef4444", "#381a1a", "#10b981"};
 
     m_themes["Gruvbox Dark"] = {
-        "Gruvbox Dark", "#282828", "#3c3836", "#504945",
-        "#ebdbb2", "#d5c4a1", "#fe8019", "#fabd2f",
-        "#d65d0e", "#b8bb26", "#b8bb26", "#fb4934"
-    };
+        "Gruvbox Dark", "#282828", "#32302f", "#2c2a29", "#3c3836",
+        "#504945", "#ebdbb2", "#a89984", "#fe8019", "#fabd2f",
+        "#d65d0e", "#282828", "#fb4934", "#3c2020", "#b8bb26"};
 
-    m_themes["Solarized Dark"] = {
-        "Solarized Dark", "#002b36", "#073642", "#586e75",
-        "#839496", "#93a1a1", "#268bd2", "#2aa198",
-        "#1e6fa8", "#859900", "#859900", "#dc322f"
-    };
+    m_themes["Nord"] = {
+        "Nord", "#2e3440", "#3b4252", "#353b49", "#434c5e",
+        "#4c566a", "#eceff4", "#d8dee9", "#88c0d0", "#8fbcbb",
+        "#81a1c1", "#2e3440", "#bf616a", "#3d2b33", "#a3be8c"};
 
     m_themes["Catppuccin Mocha"] = {
-        "Catppuccin Mocha", "#1e1e2e", "#181825", "#313244",
-        "#cdd6f4", "#a6adc8", "#89b4fa", "#b4befe",
-        "#74c7ec", "#a6e3a1", "#a6e3a1", "#f38ba8"
-    };
+        "Catppuccin Mocha", "#1e1e2e", "#252538", "#202030", "#313244",
+        "#45475a", "#cdd6f4", "#a6adc8", "#89b4fa", "#b4befe",
+        "#74c7ec", "#11111b", "#f38ba8", "#3d2331", "#a6e3a1"};
 
     m_themes["Tokyo Night"] = {
-        "Tokyo Night", "#1a1b26", "#24283b", "#414868",
-        "#c0caf5", "#a9b1d6", "#7aa2f7", "#7dcfff",
-        "#5a8df2", "#9ece6a", "#9ece6a", "#f7768e"
-    };
+        "Tokyo Night", "#1a1b26", "#24283b", "#1f2335", "#2f354f",
+        "#414868", "#c0caf5", "#9aa5ce", "#7aa2f7", "#7dcfff",
+        "#5a8df2", "#15161e", "#f7768e", "#38202d", "#9ece6a"};
+
+    m_themes["Solarized Dark"] = {
+        "Solarized Dark", "#002b36", "#073642", "#052e39", "#0e4352",
+        "#586e75", "#93a1a1", "#657b83", "#268bd2", "#2aa198",
+        "#1e6fa8", "#ffffff", "#dc322f", "#321b20", "#859900"};
 }
 
-void ThemeManager::initialize() {
+void ThemeManager::initialize()
+{
     QSettings settings("AxelGui", "Appearance");
     QString saved = settings.value("currentTheme", "Default").toString();
-    if (!applyTheme(saved)) {
+    if (!applyTheme(saved))
+    {
         resetToDefault();
     }
 }
 
-QStringList ThemeManager::availableThemes() const {
+QStringList ThemeManager::availableThemes() const
+{
     return m_themes.keys();
 }
 
-QString ThemeManager::currentThemeName() const {
+QString ThemeManager::currentThemeName() const
+{
     return m_currentTheme;
 }
 
-bool ThemeManager::applyTheme(const QString &themeName) {
-    if (!m_themes.contains(themeName)) {
+bool ThemeManager::applyTheme(const QString &themeName)
+{
+    if (!m_themes.contains(themeName))
         return false;
-    }
+
     m_currentTheme = themeName;
-    ThemeColors c = m_themes[themeName];
-    qApp->setStyleSheet(generateStylesheet(c));
+    qApp->setStyleSheet(generateStylesheet(m_themes[themeName]));
 
     QSettings settings("AxelGui", "Appearance");
     settings.setValue("currentTheme", themeName);
     return true;
 }
 
-void ThemeManager::resetToDefault() {
+void ThemeManager::resetToDefault()
+{
     QSettings settings("AxelGui", "Appearance");
     settings.remove("currentTheme");
     applyTheme("Default");
 }
 
-bool ThemeManager::parseColors(const QJsonObject &obj, ThemeColors &c) const {
-    if (!obj.contains("name") || !obj.contains("background") || !obj.contains("accent")) {
+bool ThemeManager::parseColors(const QJsonObject &obj, ThemeColors &c) const
+{
+    if (!obj.contains("name") || !obj.contains("background") || !obj.contains("accent"))
+    {
         return false;
     }
     c.name = obj.value("name").toString();
-    c.background = obj.value("background").toString("#1e1e24");
-    c.surface = obj.value("surface").toString("#2b2b36");
-    c.border = obj.value("border").toString("#3e3e4f");
+    c.background = obj.value("background").toString("#18181b");
+    c.surface = obj.value("surface").toString("#27272a");
+    c.surfaceCard = obj.value("surfaceCard").toString(c.surface);
+    c.surfaceLight = obj.value("surfaceLight").toString("#3f3f46");
+    c.border = obj.value("border").toString("#3f3f46");
     c.textPrimary = obj.value("textPrimary").toString("#ffffff");
-    c.textSecondary = obj.value("textSecondary").toString("#a0a0a0");
-    c.accent = obj.value("accent").toString("#4f8ff7");
-    c.accentHover = obj.value("accentHover").toString("#6aa2fc");
-    c.accentPressed = obj.value("accentPressed").toString("#3773db");
-    c.progressChunk = obj.value("progressChunk").toString(c.accent);
-    c.success = obj.value("success").toString("#4ec9b0");
-    c.error = obj.value("error").toString("#f44747");
+    c.textMuted = obj.value("textMuted").toString("#a1a1aa");
+    c.accent = obj.value("accent").toString("#3b82f6");
+    c.accentHover = obj.value("accentHover").toString("#60a5fa");
+    c.accentPressed = obj.value("accentPressed").toString("#2563eb");
+    c.accentText = obj.value("accentText").toString("#ffffff");
+    c.danger = obj.value("danger").toString("#ef4444");
+    c.dangerBg = obj.value("dangerBg").toString("#381a1a");
+    c.success = obj.value("success").toString("#10b981");
     return true;
 }
 
-bool ThemeManager::importThemeFromJson(const QString &filePath, QString &outThemeName) {
+bool ThemeManager::importThemeFromJson(const QString &filePath, QString &outThemeName)
+{
     QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly)) return false;
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
 
     QJsonParseError err;
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &err);
-    if (err.error != QJsonParseError::NoError || !doc.isObject()) return false;
+    if (err.error != QJsonParseError::NoError || !doc.isObject())
+        return false;
 
     ThemeColors colors;
-    if (!parseColors(doc.object(), colors)) return false;
+    if (!parseColors(doc.object(), colors))
+        return false;
 
     m_themes[colors.name] = colors;
     outThemeName = colors.name;
     return applyTheme(colors.name);
 }
 
-QString ThemeManager::generateStylesheet(const ThemeColors &c) const {
-    return QString(R"(
-        QWidget {
-            background-color: %1;
-            color: %4;
-            font-family: 'Segoe UI', 'Cantarell', sans-serif;
+QString ThemeManager::generateStylesheet(const ThemeColors &c) const
+{
+    QString qss = R"(
+        /* Root container background */
+        QMainWindow, QDialog, QWidget#centralWidget {
+            background-color: {{BG}};
+            color: {{TEXT_PRIMARY}};
+            font-family: 'Cantarell', 'Inter', 'Segoe UI', sans-serif;
             font-size: 13px;
         }
-        QMainWindow, QDialog {
-            background-color: %1;
+
+        /* --- Transparent Labels (Removes the dark background box) --- */
+        QLabel {
+            background: transparent;
+            background-color: transparent;
+            border: none;
+            color: {{TEXT_PRIMARY}};
         }
+
+        /* --- Cards / GroupBox --- */
         QGroupBox {
-            border: 1px solid %3;
-            border-radius: 6px;
-            margin-top: 10px;
-            padding-top: 10px;
+            background-color: {{SURFACE_CARD}};
+            border: 1px solid {{BORDER}};
+            border-radius: 8px;
+            margin-top: 24px;
+            padding: 18px 14px 14px 14px;
             font-weight: bold;
-            color: %7;
         }
         QGroupBox::title {
             subcontrol-origin: margin;
             subcontrol-position: top left;
-            padding: 0 5px;
+            left: 12px;
+            top: 4px;
+            background: transparent;
+            color: {{ACCENT}};
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        QLineEdit, QSpinBox, QComboBox {
-            background-color: %2;
-            border: 1px solid %3;
-            border-radius: 4px;
-            padding: 6px 10px;
-            color: %4;
-            selection-background-color: %7;
+
+        /* --- Input Fields --- */
+        QLineEdit {
+            background-color: {{SURFACE}};
+            border: 1px solid {{BORDER}};
+            border-radius: 6px;
+            padding: 7px 12px;
+            color: {{TEXT_PRIMARY}};
+            selection-background-color: {{ACCENT}};
+            selection-color: {{ACCENT_TEXT}};
         }
-        QLineEdit:focus, QSpinBox:focus, QComboBox:focus {
-            border: 1px solid %7;
+        QLineEdit:focus {
+            border: 1.5px solid {{ACCENT}};
         }
-        QPushButton {
-            background-color: %7;
-            color: %1;
-            font-weight: bold;
+
+        /* --- Modern SpinBox (Custom Up/Down Controls) --- */
+        QSpinBox {
+            background-color: {{SURFACE}};
+            border: 1px solid {{BORDER}};
+            border-radius: 6px;
+            padding: 6px 36px 6px 12px;
+            color: {{TEXT_PRIMARY}};
+            font-weight: 500;
+        }
+        QSpinBox:focus {
+            border: 1.5px solid {{ACCENT}};
+        }
+        QSpinBox::up-button {
+            subcontrol-origin: border;
+            subcontrol-position: top right;
+            width: 26px;
+            height: 14px;
+            border-left: 1px solid {{BORDER}};
+            border-bottom: 1px solid {{BORDER}};
+            border-top-right-radius: 6px;
+            background-color: {{SURFACE_LIGHT}};
+        }
+        QSpinBox::up-button:hover {
+            background-color: {{ACCENT}};
+        }
+        QSpinBox::up-button:pressed {
+            background-color: {{ACCENT_PRESSED}};
+        }
+        QSpinBox::up-arrow {
+            image: none;
+            width: 0;
+            height: 0;
+            background: transparent;
             border: none;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 5px solid {{TEXT_PRIMARY}};
+        }
+        QSpinBox::down-button {
+            subcontrol-origin: border;
+            subcontrol-position: bottom right;
+            width: 26px;
+            height: 14px;
+            border-left: 1px solid {{BORDER}};
+            border-bottom-right-radius: 6px;
+            background-color: {{SURFACE_LIGHT}};
+        }
+        QSpinBox::down-button:hover {
+            background-color: {{ACCENT}};
+        }
+        QSpinBox::down-button:pressed {
+            background-color: {{ACCENT_PRESSED}};
+        }
+        QSpinBox::down-arrow {
+            image: none;
+            width: 0;
+            height: 0;
+            background: transparent;
+            border: none;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid {{TEXT_PRIMARY}};
+        }
+
+        /* --- Modern Dropdown (QComboBox) --- */
+        QComboBox {
+            background-color: {{SURFACE}};
+            border: 1px solid {{BORDER}};
+            border-radius: 6px;
+            padding: 6px 32px 6px 12px;
+            color: {{TEXT_PRIMARY}};
+            font-weight: 500;
+        }
+        QComboBox:hover {
+            border-color: {{ACCENT}};
+        }
+        QComboBox::drop-down {
+            subcontrol-origin: padding;
+            subcontrol-position: top right;
+            width: 28px;
+            border-left: none;
+        }
+        QComboBox::down-arrow {
+            image: none;
+            width: 0;
+            height: 0;
+            background: transparent;
+            border: none;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid {{TEXT_PRIMARY}};
+            margin-right: 10px;
+        }
+        QComboBox QAbstractItemView {
+            background-color: {{SURFACE}};
+            border: 1px solid {{BORDER}};
+            border-radius: 6px;
+            selection-background-color: {{ACCENT}};
+            selection-color: {{ACCENT_TEXT}};
+            color: {{TEXT_PRIMARY}};
+            padding: 4px;
+            outline: none;
+        }
+        QComboBox QAbstractItemView::item {
+            min-height: 28px;
+            padding: 4px 8px;
             border-radius: 4px;
-            padding: 8px 16px;
+        }
+
+        /* --- Secondary Buttons --- */
+        QPushButton {
+            background-color: {{SURFACE}};
+            color: {{TEXT_PRIMARY}};
+            border: 1px solid {{BORDER}};
+            border-radius: 6px;
+            padding: 7px 14px;
+            font-weight: 600;
         }
         QPushButton:hover {
-            background-color: %8;
+            background-color: {{SURFACE_LIGHT}};
+            border-color: {{ACCENT}};
+            color: {{ACCENT}};
         }
         QPushButton:pressed {
-            background-color: %9;
+            background-color: {{BORDER}};
         }
         QPushButton:disabled {
-            background-color: %3;
-            color: %5;
+            background-color: {{SURFACE}};
+            border-color: {{SURFACE}};
+            color: {{TEXT_MUTED}};
         }
+
+        /* --- Primary Action Button --- */
+        QPushButton#primaryBtn {
+            background-color: {{ACCENT}};
+            color: {{ACCENT_TEXT}};
+            border: none;
+            padding: 9px 20px;
+            font-size: 13px;
+        }
+        QPushButton#primaryBtn:hover {
+            background-color: {{ACCENT_HOVER}};
+        }
+        QPushButton#primaryBtn:pressed {
+            background-color: {{ACCENT_PRESSED}};
+        }
+        QPushButton#primaryBtn:disabled {
+            background-color: {{SURFACE_LIGHT}};
+            color: {{TEXT_MUTED}};
+        }
+
+        /* --- Danger / Cancel Button --- */
+        QPushButton#dangerBtn {
+            background-color: {{DANGER_BG}};
+            color: {{DANGER}};
+            border: 1px solid {{DANGER}};
+            padding: 9px 20px;
+        }
+        QPushButton#dangerBtn:hover {
+            background-color: {{DANGER}};
+            color: {{BG}};
+        }
+        QPushButton#dangerBtn:disabled {
+            background-color: {{SURFACE}};
+            border-color: {{BORDER}};
+            color: {{TEXT_MUTED}};
+        }
+
+        /* --- Progress Bar --- */
         QProgressBar {
-            background-color: %2;
-            border: 1px solid %3;
-            border-radius: 4px;
+            background-color: {{SURFACE}};
+            border: 1px solid {{BORDER}};
+            border-radius: 6px;
             text-align: center;
-            color: %4;
+            color: {{TEXT_PRIMARY}};
+            font-weight: 600;
             height: 22px;
         }
         QProgressBar::chunk {
-            background-color: %10;
-            border-radius: 3px;
+            background-color: {{ACCENT}};
+            border-radius: 5px;
         }
+
+        /* --- Terminal Log Viewer --- */
         QTextEdit {
-            background-color: %2;
-            border: 1px solid %3;
-            border-radius: 4px;
-            color: %4;
-            font-family: monospace;
+            background-color: {{SURFACE_CARD}};
+            border: 1px solid {{BORDER}};
+            border-radius: 6px;
+            color: {{TEXT_PRIMARY}};
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
             font-size: 11px;
+            padding: 8px;
         }
-        QLabel {
-            color: %4;
+
+        /* --- Scrollbar --- */
+        QScrollBar:vertical {
+            background: transparent;
+            width: 8px;
+            margin: 0;
         }
-    )")
-    .arg(c.background)       // %1
-    .arg(c.surface)          // %2
-    .arg(c.border)           // %3
-    .arg(c.textPrimary)      // %4
-    .arg(c.textSecondary)    // %5
-    .arg("")                 // %6
-    .arg(c.accent)           // %7
-    .arg(c.accentHover)      // %8
-    .arg(c.accentPressed)    // %9
-    .arg(c.progressChunk);   // %10
+        QScrollBar::handle:vertical {
+            background: {{BORDER}};
+            min-height: 24px;
+            border-radius: 4px;
+        }
+        QScrollBar::handle:vertical:hover {
+            background: {{TEXT_MUTED}};
+        }
+        QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+            height: 0px;
+        }
+    )";
+
+    // Replace tokens
+    qss.replace("{{BG}}", c.background);
+    qss.replace("{{SURFACE}}", c.surface);
+    qss.replace("{{SURFACE_CARD}}", c.surfaceCard);
+    qss.replace("{{SURFACE_LIGHT}}", c.surfaceLight);
+    qss.replace("{{BORDER}}", c.border);
+    qss.replace("{{TEXT_PRIMARY}}", c.textPrimary);
+    qss.replace("{{TEXT_MUTED}}", c.textMuted);
+    qss.replace("{{ACCENT}}", c.accent);
+    qss.replace("{{ACCENT_HOVER}}", c.accentHover);
+    qss.replace("{{ACCENT_PRESSED}}", c.accentPressed);
+    qss.replace("{{ACCENT_TEXT}}", c.accentText);
+    qss.replace("{{DANGER}}", c.danger);
+    qss.replace("{{DANGER_BG}}", c.dangerBg);
+    qss.replace("{{SUCCESS}}", c.success);
+
+    return qss;
 }
