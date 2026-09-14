@@ -12,14 +12,14 @@
 
 class MainWindow : public QMainWindow
 {
-   
+
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     void setDownloadParameters(const QString &url, const QString &filename = QString(), bool autoStart = false);
 
     Q_OBJECT
-public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    // public:
+    //    explicit MainWindow(QWidget *parent = nullptr);
 
 private slots:
     void onBrowseFolder();
