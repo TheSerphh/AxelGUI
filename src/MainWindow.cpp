@@ -24,6 +24,7 @@ void MainWindow::setupUi()
     resize(780, 580);
 
     QWidget *central = new QWidget(this);
+    central->setObjectName("centralWidget"); // matching obj name so the main window only receives thje root background
     setCentralWidget(central);
     QVBoxLayout *mainLayout = new QVBoxLayout(central);
     mainLayout->setContentsMargins(16, 16, 16, 16);
