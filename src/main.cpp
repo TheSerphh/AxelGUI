@@ -12,29 +12,51 @@ int main(int argc, char *argv[])
     app.setApplicationVersion("1.0.0");
 
     QCommandLineParser parser;
-    parser.setApplicationDescription("C++ Clang GUI wrapper for Axel with robust theme engine");
+    parser.setApplicationDescription("Axel Download Manager GUI");
     parser.addHelpOption();
     parser.addVersionOption();
 
-    // Command-line safetynet option
     QCommandLineOption resetThemeOption(
         QStringList() << "r" << "reset-theme",
-        "Resets any active or corrupted custom theme back to the system default.");
+        "Resets theme settings back to Default.");
+    QCommandLineOption urlOption(
+        QStringList() << "u" << "url",
+        "Download URL",
+        "url");
+    QCommandLineOption fileOption(
+        QStringList() << "f" << "filename",
+        "Target file name",
+        "filename");
+    QCommandLineOption autoStartOption(
+        QStringList() << "a" << "autostart",
+        "Automatically start the download immediately");
+
     parser.addOption(resetThemeOption);
+    parser.addOption(urlOption);
+    parser.addOption(fileOption);
+    parser.addOption(autoStartOption);
 
     parser.process(app);
 
     if (parser.isSet(resetThemeOption))
     {
         ThemeManager::instance().resetToDefault();
-        std::cout << "[Axel-GUI SafetyNet] Theme settings successfully reset to Default." << std::endl;
+        std::cout << "[Axel-GUI] Theme reset to Default." << std::endl;
         return 0;
     }
 
     ThemeManager::instance().initialize();
 
     MainWindow window;
-    window.show();
 
+    if (parser.isSet(urlOption))
+    {
+        window.setDownloadParameters(
+            parser.value(urlOption),
+            parser.value(fileOption),
+            parser.isSet(autoStartOption));
+    }
+
+    window.show();
     return app.exec();
 }

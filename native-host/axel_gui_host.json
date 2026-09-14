@@ -1,0 +1,9 @@
+{
+    "name": "axel_gui_host",
+    "description": "Axel GUI Native Messaging Host",
+    "path": "/usr/lib/axel-gui/axel-native-host",
+    "type": "stdio",
+    "allowed_extensions": [
+        "axel-gui-downloader@sourav.dev"
+    ]
+}

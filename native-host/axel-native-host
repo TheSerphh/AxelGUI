@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+import sys
+import os
+import json
+import struct
+import subprocess
+import shutil
+
+def get_message():
+    raw_length = sys.stdin.buffer.read(4)
+    if not raw_length:
+        return None
+    message_length = struct.unpack('@I', raw_length)[0]
+    message = sys.stdin.buffer.read(message_length).decode('utf-8')
+    return json.loads(message)
+
+def main():
+    msg = get_message()
+    if not msg:
+        sys.exit(0)
+
+    url = msg.get("url", "").strip()
+    filename = msg.get("filename", "").strip()
+
+    if url:
+        # Standard system location, falling back to PATH
+        gui_path = "/usr/bin/axel-gui"
+        if not os.path.exists(gui_path):
+            gui_path = shutil.which("axel-gui") or "axel-gui"
+
+        cmd = [gui_path, "--url", url]
+        if filename:
+            cmd.extend(["--filename", os.path.basename(filename)])
+        cmd.append("--autostart")
+
+        subprocess.Popen(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True
+        )
+
+if __name__ == "__main__":
+    main()

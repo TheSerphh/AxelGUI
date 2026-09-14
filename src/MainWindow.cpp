@@ -130,6 +130,22 @@ void MainWindow::setupUi()
     mainLayout->addWidget(m_logViewer);
 }
 
+void MainWindow::setDownloadParameters(const QString &url, const QString &filename, bool autoStart)
+{
+    if (!url.trimmed().isEmpty())
+    {
+        m_urlEdit->setText(url.trimmed());
+    }
+    if (!filename.trimmed().isEmpty())
+    {
+        m_fileEdit->setText(filename.trimmed());
+    }
+    if (autoStart && !m_urlEdit->text().trimmed().isEmpty())
+    {
+        onStartDownload();
+    }
+}
+
 void MainWindow::onBrowseFolder()
 {
     QString dir = QFileDialog::getExistingDirectory(this, "Select Download Directory", m_destEdit->text());
