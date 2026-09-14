@@ -1,9 +1,56 @@
 #include "ThemeManager.h"
 #include <QApplication>
 #include <QFile>
+#include <QDir>
+#include <QImage>
+#include <QPainter>
+#include <QPainterPath>
+#include <QPen>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSettings>
+
+// Dynamically creates crisp, anti-aliased chevron icons matching the theme palette
+static QString generateChevronPng(const QString &direction, const QString &hexColor, int size, qreal strokeWidth)
+{
+    QString safeColor = QString(hexColor).remove('#');
+    QString filePath = QString("%1/axel_chevron_%2_%3_%4.png")
+                           .arg(QDir::tempPath(), direction, safeColor, QString::number(size));
+
+    if (QFile::exists(filePath))
+    {
+        return filePath;
+    }
+
+    QImage img(size, size, QImage::Format_ARGB32_Premultiplied);
+    img.fill(Qt::transparent);
+
+    QPainter painter(&img);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    QPen pen(QColor(hexColor), strokeWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    painter.setPen(pen);
+
+    QPainterPath path;
+    if (direction == "down")
+    {
+        path.moveTo(size * 0.22, size * 0.36);
+        path.lineTo(size * 0.50, size * 0.64);
+        path.lineTo(size * 0.78, size * 0.36);
+    }
+    else if (direction == "up")
+    {
+        path.moveTo(size * 0.22, size * 0.64);
+        path.lineTo(size * 0.50, size * 0.36);
+        path.lineTo(size * 0.78, size * 0.64);
+    }
+
+    painter.drawPath(path);
+    painter.end();
+
+    img.save(filePath, "PNG");
+    return filePath;
+}
 
 ThemeManager &ThemeManager::instance()
 {
@@ -135,8 +182,15 @@ bool ThemeManager::importThemeFromJson(const QString &filePath, QString &outThem
 
 QString ThemeManager::generateStylesheet(const ThemeColors &c) const
 {
+    // Generate theme-matching chevron assets in temp directory
+    QString comboArrowNormal = generateChevronPng("down", c.textPrimary, 16, 2.2);
+    QString comboArrowHover = generateChevronPng("down", c.accent, 16, 2.2);
+    QString spinUpNormal = generateChevronPng("up", c.textPrimary, 14, 2.0);
+    QString spinUpHover = generateChevronPng("up", c.accent, 14, 2.0);
+    QString spinDownNormal = generateChevronPng("down", c.textPrimary, 14, 2.0);
+    QString spinDownHover = generateChevronPng("down", c.accent, 14, 2.0);
+
     QString qss = R"(
-        /* Root container background */
         QMainWindow, QDialog, QWidget#centralWidget {
             background-color: {{BG}};
             color: {{TEXT_PRIMARY}};
@@ -144,10 +198,8 @@ QString ThemeManager::generateStylesheet(const ThemeColors &c) const
             font-size: 13px;
         }
 
-        /* --- Transparent Labels (Removes the dark background box) --- */
         QLabel {
             background: transparent;
-            background-color: transparent;
             border: none;
             color: {{TEXT_PRIMARY}};
         }
@@ -157,7 +209,7 @@ QString ThemeManager::generateStylesheet(const ThemeColors &c) const
             background-color: {{SURFACE_CARD}};
             border: 1px solid {{BORDER}};
             border-radius: 8px;
-            margin-top: 24px;
+            margin-top: 28px;
             padding: 18px 14px 14px 14px;
             font-weight: bold;
         }
@@ -173,7 +225,7 @@ QString ThemeManager::generateStylesheet(const ThemeColors &c) const
             letter-spacing: 0.5px;
         }
 
-        /* --- Input Fields --- */
+        /* --- Text Inputs --- */
         QLineEdit {
             background-color: {{SURFACE}};
             border: 1px solid {{BORDER}};
@@ -187,76 +239,12 @@ QString ThemeManager::generateStylesheet(const ThemeColors &c) const
             border: 1.5px solid {{ACCENT}};
         }
 
-        /* --- Modern SpinBox (Custom Up/Down Controls) --- */
-        QSpinBox {
-            background-color: {{SURFACE}};
-            border: 1px solid {{BORDER}};
-            border-radius: 6px;
-            padding: 6px 36px 6px 12px;
-            color: {{TEXT_PRIMARY}};
-            font-weight: 500;
-        }
-        QSpinBox:focus {
-            border: 1.5px solid {{ACCENT}};
-        }
-        QSpinBox::up-button {
-            subcontrol-origin: border;
-            subcontrol-position: top right;
-            width: 26px;
-            height: 14px;
-            border-left: 1px solid {{BORDER}};
-            border-bottom: 1px solid {{BORDER}};
-            border-top-right-radius: 6px;
-            background-color: {{SURFACE_LIGHT}};
-        }
-        QSpinBox::up-button:hover {
-            background-color: {{ACCENT}};
-        }
-        QSpinBox::up-button:pressed {
-            background-color: {{ACCENT_PRESSED}};
-        }
-        QSpinBox::up-arrow {
-            image: none;
-            width: 0;
-            height: 0;
-            background: transparent;
-            border: none;
-            border-left: 4px solid transparent;
-            border-right: 4px solid transparent;
-            border-bottom: 5px solid {{TEXT_PRIMARY}};
-        }
-        QSpinBox::down-button {
-            subcontrol-origin: border;
-            subcontrol-position: bottom right;
-            width: 26px;
-            height: 14px;
-            border-left: 1px solid {{BORDER}};
-            border-bottom-right-radius: 6px;
-            background-color: {{SURFACE_LIGHT}};
-        }
-        QSpinBox::down-button:hover {
-            background-color: {{ACCENT}};
-        }
-        QSpinBox::down-button:pressed {
-            background-color: {{ACCENT_PRESSED}};
-        }
-        QSpinBox::down-arrow {
-            image: none;
-            width: 0;
-            height: 0;
-            background: transparent;
-            border: none;
-            border-left: 4px solid transparent;
-            border-right: 4px solid transparent;
-            border-top: 5px solid {{TEXT_PRIMARY}};
-        }
-
-        /* --- Modern Dropdown (QComboBox) --- */
+        /* --- Dropdown (QComboBox) --- */
         QComboBox {
             background-color: {{SURFACE}};
             border: 1px solid {{BORDER}};
             border-radius: 6px;
-            padding: 6px 32px 6px 12px;
+            padding: 6px 36px 6px 12px;
             color: {{TEXT_PRIMARY}};
             font-weight: 500;
         }
@@ -266,19 +254,22 @@ QString ThemeManager::generateStylesheet(const ThemeColors &c) const
         QComboBox::drop-down {
             subcontrol-origin: padding;
             subcontrol-position: top right;
-            width: 28px;
-            border-left: none;
+            width: 30px;
+            border-left: 1px solid {{SURFACE}};
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+            background-color: {{SURFACE}};
+        }
+        QComboBox::drop-down:hover {
+            background-color: {{SURFACE}};
         }
         QComboBox::down-arrow {
-            image: none;
-            width: 0;
-            height: 0;
-            background: transparent;
-            border: none;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 5px solid {{TEXT_PRIMARY}};
-            margin-right: 10px;
+            image: url("{{COMBO_ARROW}}");
+            width: 13px;
+            height: 13px;
+        }
+        QComboBox::down-arrow:hover {
+            image: url("{{COMBO_ARROW_HOVER}}");
         }
         QComboBox QAbstractItemView {
             background-color: {{SURFACE}};
@@ -294,6 +285,66 @@ QString ThemeManager::generateStylesheet(const ThemeColors &c) const
             min-height: 28px;
             padding: 4px 8px;
             border-radius: 4px;
+        }
+
+        /* --- Connections SpinBox --- */
+        QSpinBox {
+            background-color: {{SURFACE}};
+            border: 1px solid {{BORDER}};
+            border-radius: 6px;
+            padding: 6px 40px 6px 12px;
+            color: {{TEXT_PRIMARY}};
+            font-weight: 500;
+        }
+        QSpinBox:focus {
+            border: 1.5px solid {{ACCENT}};
+        }
+        QSpinBox::up-button {
+            subcontrol-origin: border;
+            subcontrol-position: top right;
+            width: 0px;
+            height: 0px;
+            border-left: 1px solid {{BORDER}};
+            border-bottom: 1px solid {{BORDER}};
+            border-top-right-radius: 6px;
+            background-color: {{SURFACE_LIGHT}};
+        }
+        QSpinBox::up-button:hover {
+            background-color: {{BORDER}};
+        }
+        QSpinBox::up-button:pressed {
+            background-color: {{ACCENT}};
+        }
+        QSpinBox::up-arrow {
+            image: url("{{SPIN_UP}}");
+            width: 0px;
+            height: 0px;
+        }
+        QSpinBox::up-arrow:hover {
+            image: url("{{SPIN_UP_HOVER}}");
+        }
+        QSpinBox::down-button {
+            subcontrol-origin: border;
+            subcontrol-position: bottom right;
+            width: 0px;
+            height: 0px;
+            border-left: 1px solid {{BORDER}};
+            border-bottom-right-radius: 6px;
+            background-color: {{SURFACE_LIGHT}};
+        }
+        QSpinBox::down-button:hover {
+            background-color: {{BORDER}};
+        }
+        QSpinBox::down-button:pressed {
+            background-color: {{ACCENT}};
+        }
+        QSpinBox::down-arrow {
+            image: url("{{SPIN_DOWN}}");
+            width: 0px;
+            height: 0px;
+        }
+        QSpinBox::down-arrow:hover {
+            image: url("{{SPIN_DOWN_HOVER}}");
         }
 
         /* --- Secondary Buttons --- */
@@ -381,7 +432,7 @@ QString ThemeManager::generateStylesheet(const ThemeColors &c) const
             padding: 8px;
         }
 
-        /* --- Scrollbar --- */
+        /* --- Scrollbars --- */
         QScrollBar:vertical {
             background: transparent;
             width: 8px;
@@ -400,7 +451,7 @@ QString ThemeManager::generateStylesheet(const ThemeColors &c) const
         }
     )";
 
-    // Replace tokens
+    // Replace color and asset tokens
     qss.replace("{{BG}}", c.background);
     qss.replace("{{SURFACE}}", c.surface);
     qss.replace("{{SURFACE_CARD}}", c.surfaceCard);
@@ -415,6 +466,14 @@ QString ThemeManager::generateStylesheet(const ThemeColors &c) const
     qss.replace("{{DANGER}}", c.danger);
     qss.replace("{{DANGER_BG}}", c.dangerBg);
     qss.replace("{{SUCCESS}}", c.success);
+
+    // Replace vector icon paths
+    qss.replace("{{COMBO_ARROW}}", comboArrowNormal);
+    qss.replace("{{COMBO_ARROW_HOVER}}", comboArrowHover);
+    qss.replace("{{SPIN_UP}}", spinUpNormal);
+    qss.replace("{{SPIN_UP_HOVER}}", spinUpHover);
+    qss.replace("{{SPIN_DOWN}}", spinDownNormal);
+    qss.replace("{{SPIN_DOWN_HOVER}}", spinDownHover);
 
     return qss;
 }
