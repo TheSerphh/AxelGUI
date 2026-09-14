@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Axel Download Manager
+Comment=High-speed multi-connection download manager powered by Axel
+Exec=axel-gui %U
+Icon=download
+Terminal=false
+Type=Application
+Categories=Network;FileTransfer;
+MimeType=x-scheme-handler/http;x-scheme-handler/https;
