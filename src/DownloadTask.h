@@ -4,11 +4,13 @@
 #include <QProcess>
 #include <QRegularExpression>
 
-class DownloadTask : public QObject {
+class DownloadTask : public QObject
+{
     Q_OBJECT
 public:
     explicit DownloadTask(QObject *parent = nullptr);
-    void start(const QString &url, const QString &destDir, const QString &filename, int connections);
+    void start(const QString &url, const QString &destDir, const QString &filename, int connections,
+               const QString &cookie = QString(), const QString &userAgent = QString(), const QString &referer = QString());
     void cancel();
     bool isRunning() const;
 

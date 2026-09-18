@@ -21,9 +21,11 @@ def main():
 
     url = msg.get("url", "").strip()
     filename = msg.get("filename", "").strip()
+    cookie = msg.get("cookie", "").strip()
+    user_agent = msg.get("userAgent", "").strip()
+    referer = msg.get("referer", "").strip()
 
     if url:
-        # Standard system location, falling back to PATH
         gui_path = "/usr/bin/axel-gui"
         if not os.path.exists(gui_path):
             gui_path = shutil.which("axel-gui") or "axel-gui"
@@ -31,6 +33,13 @@ def main():
         cmd = [gui_path, "--url", url]
         if filename:
             cmd.extend(["--filename", os.path.basename(filename)])
+        if cookie:
+            cmd.extend(["--cookie", cookie])
+        if user_agent:
+            cmd.extend(["--user-agent", user_agent])
+        if referer:
+            cmd.extend(["--referer", referer])
+
         cmd.append("--autostart")
 
         subprocess.Popen(

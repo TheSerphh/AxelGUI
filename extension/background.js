@@ -27,7 +27,6 @@ function isLocalOrRouterAddress(hostname) {
     if (hostname === "localhost" || hostname.endsWith(".local")) {
         return true;
     }
-
     const privateIpRegex = /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/;
     return privateIpRegex.test(hostname);
 }
@@ -38,18 +37,12 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
         return;
     }
 
-    //check if any unauthenticated captive portal present or not
     try {
         if (browser.captivePortal && browser.captivePortal.getState) {
             const portalState = await browser.captivePortal.getState();
-            if (portalState === "locked_portal") {
-
-                return;
-            }
+            if (portalState === "locked_portal") return;
         }
-    } catch (e) {
-
-    }
+    } catch (e) { }
 
     let parsedUrl;
     try {
@@ -58,43 +51,36 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
         return;
     }
 
-
-    if (CAPTIVE_PORTAL_DOMAINS.includes(parsedUrl.hostname.toLowerCase())) {
-        return;
-    }
-
-
-    if (isLocalOrRouterAddress(parsedUrl.hostname)) {
-        return;
-    }
+    if (CAPTIVE_PORTAL_DOMAINS.includes(parsedUrl.hostname.toLowerCase())) return;
+    if (isLocalOrRouterAddress(parsedUrl.hostname)) return;
 
     const pathname = parsedUrl.pathname.toLowerCase();
     if (pathname.includes("/login") || pathname.includes("/portal") || pathname.includes("/guest") || pathname.includes("/hotspot")) {
         return;
     }
 
-
     for (const ext of IGNORED_EXTENSIONS) {
-        if (pathname.endsWith(ext)) {
-            return;
-        }
+        if (pathname.endsWith(ext)) return;
     }
-
 
     if (downloadItem.mime && IGNORED_MIME_TYPES.includes(downloadItem.mime.toLowerCase())) {
         return;
     }
-
-    // Intercept valid file downloasd
+    let cookieString = "";
+    try {
+        const cookies = await browser.cookies.getAll({ url: rawUrl });
+        cookieString = cookies.map(c => `${c.name}=${c.value}`).join("; ");
+    } catch (e) { }
     try {
         await browser.downloads.cancel(downloadItem.id);
         await browser.downloads.erase({ id: downloadItem.id });
-    } catch (e) {
-
-    }
+    } catch (e) { }
 
     browser.runtime.sendNativeMessage("axel_gui_host", {
         url: rawUrl,
-        filename: downloadItem.filename || ""
+        filename: downloadItem.filename || "",
+        cookie: cookieString,
+        userAgent: navigator.userAgent,
+        referer: downloadItem.referrer || parsedUrl.origin
     });
 });

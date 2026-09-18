@@ -130,7 +130,9 @@ void MainWindow::setupUi()
     mainLayout->addWidget(m_logViewer);
 }
 
-void MainWindow::setDownloadParameters(const QString &url, const QString &filename, bool autoStart)
+void MainWindow::setDownloadParameters(const QString &url, const QString &filename,
+                                       const QString &cookie, const QString &userAgent,
+                                       const QString &referer, bool autoStart)
 {
     if (!url.trimmed().isEmpty())
     {
@@ -140,6 +142,10 @@ void MainWindow::setDownloadParameters(const QString &url, const QString &filena
     {
         m_fileEdit->setText(filename.trimmed());
     }
+    m_cookie = cookie;
+    m_userAgent = userAgent;
+    m_referer = referer;
+
     if (autoStart && !m_urlEdit->text().trimmed().isEmpty())
     {
         onStartDownload();
@@ -169,7 +175,8 @@ void MainWindow::onStartDownload()
     m_startBtn->setEnabled(false);
     m_cancelBtn->setEnabled(true);
 
-    m_task.start(m_urlEdit->text(), m_destEdit->text(), m_fileEdit->text(), m_connSpin->value());
+    m_task.start(m_urlEdit->text(), m_destEdit->text(), m_fileEdit->text(), m_connSpin->value(),
+                 m_cookie, m_userAgent, m_referer);
 }
 
 void MainWindow::onCancelDownload()

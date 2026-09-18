@@ -15,11 +15,11 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    void setDownloadParameters(const QString &url, const QString &filename = QString(), bool autoStart = false);
+    void setDownloadParameters(const QString &url, const QString &filename = QString(),
+                               const QString &cookie = QString(), const QString &userAgent = QString(),
+                               const QString &referer = QString(), bool autoStart = false);
 
     Q_OBJECT
-    // public:
-    //    explicit MainWindow(QWidget *parent = nullptr);
 
 private slots:
     void onBrowseFolder();
@@ -48,6 +48,8 @@ private:
     QLabel *m_etaLabel;
     QTextEdit *m_logViewer;
     QComboBox *m_themeCombo;
-
+    QString m_cookie;
+    QString m_userAgent;
+    QString m_referer;
     DownloadTask m_task;
 };

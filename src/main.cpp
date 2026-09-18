@@ -30,12 +30,17 @@ int main(int argc, char *argv[])
     QCommandLineOption autoStartOption(
         QStringList() << "a" << "autostart",
         "Automatically start the download immediately");
-
+    QCommandLineOption cookieOption("cookie", "Session Cookie header", "cookie");
+    QCommandLineOption userAgentOption("user-agent", "Browser User-Agent header", "user-agent");
+    QCommandLineOption refererOption("referer", "Referer header", "referer");
+    
     parser.addOption(resetThemeOption);
     parser.addOption(urlOption);
     parser.addOption(fileOption);
     parser.addOption(autoStartOption);
-
+    parser.addOption(cookieOption);
+    parser.addOption(userAgentOption);
+    parser.addOption(refererOption);
     parser.process(app);
 
     if (parser.isSet(resetThemeOption))
@@ -54,6 +59,9 @@ int main(int argc, char *argv[])
         window.setDownloadParameters(
             parser.value(urlOption),
             parser.value(fileOption),
+            parser.value(cookieOption),
+            parser.value(userAgentOption),
+            parser.value(refererOption),
             parser.isSet(autoStartOption));
     }
 

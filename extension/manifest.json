@@ -16,7 +16,9 @@
     "permissions": [
         "downloads",
         "nativeMessaging",
-        "captivePortal"
+        "captivePortal",
+        "cookies",
+        "<all_urls>"
     ],
     "background": {
         "scripts": [
