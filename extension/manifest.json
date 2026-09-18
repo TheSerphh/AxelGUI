@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Axel GUI Integration",
-    "version": "1.0",
+    "version": "1.1",
     "description": "Intercepts downloads and sends them directly to Axel GUI",
     "browser_specific_settings": {
         "gecko": {
@@ -15,7 +15,8 @@
     },
     "permissions": [
         "downloads",
-        "nativeMessaging"
+        "nativeMessaging",
+        "captivePortal"
     ],
     "background": {
         "scripts": [
