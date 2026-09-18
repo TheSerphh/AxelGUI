@@ -32,9 +32,12 @@ A modern, lightweight Qt6 GUI for the [Axel](https://github.com/axel-download-ac
 
 ### Arch Linux (AUR)
 
-Install via your preferred AUR helper:
+* **Firefox Extension:** [Axel GUI Integration](https://addons.mozilla.org/en-US/firefox/addon/axel-gui-integration/)
+* **Install via your preferred AUR helper:**
 
-```bash
-yay -S axel-gui-git
-# or
-paru -S axel-gui-git
+  ```bash
+  yay -S axel-gui-git
+  # or
+  paru -S axel-gui-git
+  ```
+
