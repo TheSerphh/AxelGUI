@@ -14,6 +14,8 @@ DownloadTask::DownloadTask(QObject *parent)
 void DownloadTask::start(const QString &url, const QString &destDir, const QString &filename, int connections,
                          const QString &cookie, const QString &userAgent, const QString &referer)
 {
+    m_isPaused = false;
+
     QStringList args;
     args << "-n" << QString::number(connections);
 
@@ -25,6 +27,7 @@ void DownloadTask::start(const QString &url, const QString &destDir, const QStri
     {
         m_process.setWorkingDirectory(destDir);
     }
+
     if (!userAgent.trimmed().isEmpty())
     {
         args << "-U" << userAgent.trimmed();
@@ -44,22 +47,43 @@ void DownloadTask::start(const QString &url, const QString &destDir, const QStri
     m_process.start("axel", args);
 }
 
-void DownloadTask::cancel()
+void DownloadTask::pause()
 {
     if (isRunning())
     {
+        m_isPaused = true;
         m_process.terminate();
-        if (!m_process.waitForFinished(1000))
+        if (!m_process.waitForFinished(3000))
         {
             m_process.kill();
         }
-        emit logReceived("[INFO] Download cancelled by user.");
+        emit logReceived("[INFO] Download paused. Resume state (.st) preserved.");
+        emit paused();
+    }
+}
+
+void DownloadTask::cancel()
+{
+    m_isPaused = false;
+    if (isRunning())
+    {
+        m_process.terminate();
+        if (!m_process.waitForFinished(1500))
+        {
+            m_process.kill();
+        }
+        emit logReceived("[INFO] Download cancelled.");
     }
 }
 
 bool DownloadTask::isRunning() const
 {
     return m_process.state() != QProcess::NotRunning;
+}
+
+bool DownloadTask::isPaused() const
+{
+    return m_isPaused;
 }
 
 void DownloadTask::handleReadyRead()
@@ -88,6 +112,11 @@ void DownloadTask::handleReadyRead()
 
 void DownloadTask::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    if (m_isPaused)
+    {
+        return;
+    }
+
     if (exitStatus == QProcess::NormalExit && exitCode == 0)
     {
         emit progressUpdated(100, "0 B/s", "Done");
@@ -101,8 +130,8 @@ void DownloadTask::handleProcessFinished(int exitCode, QProcess::ExitStatus exit
 
 void DownloadTask::handleErrorOccurred(QProcess::ProcessError error)
 {
-    if (error == QProcess::FailedToStart)
+    if (!m_isPaused && error == QProcess::FailedToStart)
     {
-        emit finished(false, "Failed to start axel. Make sure 'axel' is installed and in PATH.");
+        emit finished(false, "Failed to start axel. Make sure 'axel' is installed.");
     }
 }

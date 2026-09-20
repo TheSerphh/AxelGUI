@@ -286,6 +286,55 @@ QString ThemeManager::generateStylesheet(const ThemeColors &c) const
             padding: 4px 8px;
             border-radius: 4px;
         }
+        /* --- Modern Tab Widget & Bar --- */
+        QTabWidget::pane {
+            border: 1px solid {{BORDER}};
+            border-radius: 8px;
+            background-color: {{SURFACE_CARD}};
+            top: -1px;
+        }
+        QTabBar::tab {
+            background-color: {{SURFACE}};
+            color: {{TEXT_MUTED}};
+            border: 1px solid {{BORDER}};
+            border-bottom: none;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            padding: 8px 18px;
+            margin-right: 4px;
+            font-weight: 600;
+        }
+        QTabBar::tab:selected {
+            background-color: {{SURFACE_CARD}};
+            color: {{ACCENT}};
+            border-bottom: 2px solid {{ACCENT}};
+        }
+        QTabBar::tab:hover:!selected {
+            background-color: {{SURFACE_LIGHT}};
+            color: {{TEXT_PRIMARY}};
+        }
+
+        QTableWidget {
+            background-color: {{SURFACE}};
+            border: 1px solid {{BORDER}};
+            border-radius: 6px;
+            gridline-color: {{BORDER}};
+            color: {{TEXT_PRIMARY}};
+            selection-background-color: {{SURFACE_LIGHT}};
+            selection-color: {{ACCENT}};
+        }
+        QHeaderView::section {
+            background-color: {{SURFACE_CARD}};
+            color: {{TEXT_MUTED}};
+            font-weight: bold;
+            padding: 6px 10px;
+            border: none;
+            border-bottom: 1px solid {{BORDER}};
+            border-right: 1px solid {{BORDER}};
+        }
+        QTableWidget::item {
+            padding: 6px 10px;
+        }
 
         /* --- Connections SpinBox --- */
         QSpinBox {

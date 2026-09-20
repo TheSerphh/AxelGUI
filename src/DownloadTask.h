@@ -11,13 +11,16 @@ public:
     explicit DownloadTask(QObject *parent = nullptr);
     void start(const QString &url, const QString &destDir, const QString &filename, int connections,
                const QString &cookie = QString(), const QString &userAgent = QString(), const QString &referer = QString());
+    void pause();
     void cancel();
     bool isRunning() const;
+    bool isPaused() const;
 
 signals:
     void progressUpdated(int percentage, const QString &speed, const QString &eta);
     void logReceived(const QString &line);
     void finished(bool success, const QString &message);
+    void paused();
 
 private slots:
     void handleReadyRead();
@@ -29,4 +32,5 @@ private:
     QRegularExpression m_regexProgress;
     QRegularExpression m_regexSpeed;
     QRegularExpression m_regexEta;
+    bool m_isPaused = false;
 };
