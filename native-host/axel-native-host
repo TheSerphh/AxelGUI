@@ -14,9 +14,23 @@ def get_message():
     message = sys.stdin.buffer.read(message_length).decode('utf-8')
     return json.loads(message)
 
+def send_message(msg):
+    encoded = json.dumps(msg).encode('utf-8')
+    sys.stdout.buffer.write(struct.pack('@I', len(encoded)))
+    sys.stdout.buffer.write(encoded)
+    sys.stdout.buffer.flush()
+
 def main():
     msg = get_message()
     if not msg:
+        sys.exit(0)
+
+    gui_path = "/usr/bin/axel-gui"
+    if not os.path.exists(gui_path):
+        gui_path = shutil.which("axel-gui")
+
+    if not gui_path or not os.path.exists(gui_path):
+        send_message({"error": "not_installed"})
         sys.exit(0)
 
     url = msg.get("url", "").strip()
@@ -26,10 +40,6 @@ def main():
     referer = msg.get("referer", "").strip()
 
     if url:
-        gui_path = "/usr/bin/axel-gui"
-        if not os.path.exists(gui_path):
-            gui_path = shutil.which("axel-gui") or "axel-gui"
-
         cmd = [gui_path, "--url", url]
         if filename:
             cmd.extend(["--filename", os.path.basename(filename)])
@@ -48,6 +58,7 @@ def main():
             stderr=subprocess.DEVNULL,
             start_new_session=True
         )
+        send_message({"status": "started"})
 
 if __name__ == "__main__":
     main()
