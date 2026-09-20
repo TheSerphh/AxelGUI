@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QProcess>
 #include <QRegularExpression>
+#include <QElapsedTimer>
 
 class DownloadTask : public QObject
 {
@@ -32,5 +33,12 @@ private:
     QRegularExpression m_regexProgress;
     QRegularExpression m_regexSpeed;
     QRegularExpression m_regexEta;
+
+    QElapsedTimer m_downloadTimer;
+    int m_currentPercent = 0;
+    int m_initialPercent = -1;
+    QString m_currentSpeed = "--";
+    QString m_currentEta = "--";
+
     bool m_isPaused = false;
 };

@@ -14,6 +14,10 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QUuid>
+#include <QSystemTrayIcon>
+#include <QDesktopServices>
+#include <QUrl>
+#include <QApplication>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -474,7 +478,49 @@ void MainWindow::onDownloadFinished(bool success, const QString &message)
     m_pauseBtn->setEnabled(false);
     m_cancelBtn->setEnabled(false);
     m_statusLabel->setText(success ? "Completed" : "Error");
-    if (!success)
+
+    if (success)
+    {
+        QString filename = m_fileEdit->text().trimmed();
+        if (filename.isEmpty())
+        {
+            filename = QUrl(m_urlEdit->text().trimmed()).fileName();
+            if (filename.isEmpty())
+                filename = "downloaded file";
+        }
+        if (QSystemTrayIcon::isSystemTrayAvailable())
+        {
+            QSystemTrayIcon *tray = new QSystemTrayIcon(this);
+            tray->show();
+            tray->showMessage(
+                "Download Complete",
+                QString("'%1' has finished downloading.").arg(filename),
+                QSystemTrayIcon::Information,
+                5000);
+        }
+        raise();
+        activateWindow();
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle("Download Finished");
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.setText(QString("<b>Download Complete!</b><br><br>"
+                               "<b>File:</b> %1<br>"
+                               "<b>Saved to:</b> %2")
+                           .arg(filename, m_destEdit->text()));
+
+        QPushButton *okBtn = msgBox.addButton(QMessageBox::Ok);
+        QPushButton *openFolderBtn = msgBox.addButton("Open Folder", QMessageBox::ActionRole);
+        msgBox.setDefaultButton(okBtn);
+
+        msgBox.exec();
+        if (msgBox.clickedButton() == openFolderBtn)
+        {
+            QDesktopServices::openUrl(QUrl::fromLocalFile(m_destEdit->text()));
+        }
+
+        qApp->quit();
+    }
+    else
     {
         QMessageBox::critical(this, "Download Failed", message);
     }
